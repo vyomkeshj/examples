@@ -230,9 +230,6 @@ int main()
         {
         	cudaStreamCreate(&Streams[i]);
         }
-        
-  
-        
 
         CUDAMEASURE(({
         		for(int s=0; s < n_segments; s++)

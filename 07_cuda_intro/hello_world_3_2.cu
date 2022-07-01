@@ -2,10 +2,13 @@
 
 
 __global__ void cuda_hello(){
-    int blockID = blockIdx.x * blockDim.x;
-    int threadID = blockID + threadIdx.x;
-    printf("Hello from thread: %d/%d , %d/%d global: %d/%d \n", 
-           threadIdx.x, blockDim.x, blockIdx.x, gridDim.x, threadID, blockDim.x*gridDim.x);
+    int block_index = blockIdx.x;
+    int thread_index = threadIdx.x + blockIdx.x * blockDim.x;
+    printf("Thread index %d: \n",thread_index);
+    printf("block index %d: \n",block_index);
+
+//    printf("Hello from thread: %d/%d , %d/%d global: %d/%d \n",
+//           threadIdx.x, blockDim.x, blockIdx.x, gridDim.x, thread_index, blockDim.x*gridDim.x);
 }
 
 int main() {

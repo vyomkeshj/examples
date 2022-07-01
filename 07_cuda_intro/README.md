@@ -58,7 +58,9 @@ Write, compile and run a simple Hello world CUDA program. Write a kernel that pr
 
 ### Step 3.2
 
-Copy and modify the previous program so that each thread prints its thread index and block index. Also print the block size and grid size. Launch the kernel with 2 blocks, each with 4 threads. Try to experiment with different numbers of blocks and threads (kernel configurations).
+Copy and modify the previous program so that each thread prints its thread index and block index.
+Also print the block size and grid size. Launch the kernel with 2 blocks, each with 4 threads.
+Try to experiment with different numbers of blocks and threads (kernel configurations).
 
 ### Step 3.3
 
@@ -89,4 +91,6 @@ Step 4: Vector scale
 
 Write a CUDA program that multiplies all elements of a vector by a scalar.
 
-Allocate, initialize and print the vector on the host, allocate device memory and copy the data to the device. Write and launch the kernel that performs the scaling, each thread handling at most one element of the vector. Copy the result back to the host, print it and check for correctness. Use `cudaMalloc`, `cudaMemcpy`, `cudaFree`. Make sure the program works with any vector size.
+Allocate, initialize and print the vector on the host, allocate device memory and copy the data to the device. 
+Write and launch the kernel that performs the scaling, each thread handling at most one element of the vector.
+Copy the result back to the host, print it and check for correctness. Use `cudaMalloc`, `cudaMemcpy`, `cudaFree`. Make sure the program works with any vector size.

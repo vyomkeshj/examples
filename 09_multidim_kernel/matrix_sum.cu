@@ -13,8 +13,6 @@ inline void cuda_check(cudaError_t error_code, const char *file, int line)
     }
 }
 
-
-
 void check_row_sums(unsigned int * row_sums, size_t n_rows, size_t n_cols)
 {
     size_t error_count = 0;
@@ -57,12 +55,6 @@ void check_col_sums(unsigned int * col_sums, size_t n_rows, size_t n_cols)
         printf("Total errors: %d\n", error_count);
 }
 
-
-
-
-
-
-
 __global__ void matrix_init(unsigned int * matrix, size_t n_rows, size_t n_cols, size_t ld)
 {
     size_t col = blockIdx.x * blockDim.x + threadIdx.x;
@@ -72,10 +64,7 @@ __global__ void matrix_init(unsigned int * matrix, size_t n_rows, size_t n_cols,
         matrix[row * ld + col] = 2 * row + col;
 }
 
-
-// TODO kernely
-__global__ 
-void add_matrix_row(unsigned int * matrix, unsigned int * rows, size_t size, int ld, int pitch){
+__global__ void add_matrix_row(unsigned int * matrix, unsigned int * rows, size_t size, int ld, int pitch){
     size_t row = (blockIdx.x * blockDim.x + threadIdx.x); 
     
     if(row > size)
@@ -88,7 +77,6 @@ void add_matrix_row(unsigned int * matrix, unsigned int * rows, size_t size, int
     
     rows[row] = sum;
 }
-
 
 __global__ 
 void add_matrix_col(unsigned int * matrix, unsigned int * cols, size_t size, int ld, int pitch){
@@ -105,16 +93,15 @@ void add_matrix_col(unsigned int * matrix, unsigned int * cols, size_t size, int
     cols[col] = sum;
 }
 
-
-
-
 int main()
 {
     size_t size = 98765;
 
     unsigned int * d_matrix;
     size_t d_pitch;
+//    CUDACHECK(cudaMallocPitch(&d_matrix, &d_pitch, size * sizeof(unsigned int), size));
     CUDACHECK(cudaMallocPitch(&d_matrix, &d_pitch, size * sizeof(unsigned int), size));
+
     size_t d_ld = d_pitch / sizeof(int);
     // d_ld = size;
 
@@ -137,28 +124,26 @@ int main()
     CUDACHECK(cudaEventCreate(&start_cols));
     CUDACHECK(cudaEventCreate(&end_cols));
 
-    dim3 tpb, bpg;
-    
+    dim3 thread_p_block = dim3(32, 32);
+    dim3 blocks_per_grid = dim3((size - 1) / thread_p_block.x + 1, (size - 1) / thread_p_block.y + 1);
 
-
-    tpb = dim3(32, 32);
-    bpg = dim3((size - 1) / tpb.x + 1, (size - 1) / tpb.y + 1);
     CUDACHECK(cudaEventRecord(start_init));
-    matrix_init<<< bpg, tpb >>>(d_matrix, size, size, d_ld);
+
+    matrix_init<<< blocks_per_grid, thread_p_block >>>(d_matrix, size, size, d_ld);
+
     CUDACHECK(cudaEventRecord(end_init));
 
-    tpb = 512;
-    bpg = (size - 1) / tpb.x + 1;
+    thread_p_block = 512;
+    blocks_per_grid = (size - 1) / thread_p_block.x + 1;
     cudaEventRecord(start_rows);
-    add_matrix_row<<<bpg, tpb>>>(d_matrix, d_row_sums, size, d_ld, d_pitch);
+    add_matrix_row<<<blocks_per_grid, thread_p_block>>>(d_matrix, d_row_sums, size, d_ld, d_pitch);
     cudaEventRecord(end_rows);
 
-    tpb = 512;
-    bpg = (size - 1) / tpb.x + 1;
+    thread_p_block = 512;
+    blocks_per_grid = (size - 1) / thread_p_block.x + 1;
     cudaEventRecord(start_cols);
-    add_matrix_col<<<bpg, tpb>>>(d_matrix, d_col_sums, size, d_ld, d_pitch);
+    add_matrix_col<<<blocks_per_grid, thread_p_block>>>(d_matrix, d_col_sums, size, d_ld, d_pitch);
     cudaEventRecord(end_cols);
-
 
     CUDACHECK(cudaMemcpy(h_row_sums, d_row_sums, size * sizeof(unsigned int), cudaMemcpyDeviceToHost));
     CUDACHECK(cudaMemcpy(h_col_sums, d_col_sums, size * sizeof(unsigned int), cudaMemcpyDeviceToHost));
@@ -166,22 +151,16 @@ int main()
     check_row_sums(h_row_sums, size, size);
     check_col_sums(h_col_sums, size, size);
 
-
-
     float time_init, time_rows, time_cols;
     
-    
-    // TODO: find the time
     cudaEventElapsedTime(&time_init, start_init, end_init);
     cudaEventElapsedTime(&time_rows, start_rows, end_rows);
     cudaEventElapsedTime(&time_cols, start_cols, end_cols);
     printf("\n");
     printf("Matrix init time:              %7.3f ms\n", time_init);
     printf("Summation time in each row:    %7.3f ms\n", time_rows);
-    printf("Summation time in each column: %7.3f ms\n", time_cols);
+    printf("Time taken to add each column: %7.3f ms\n", time_cols);
     printf("Using coalesced memory accesses was %5.2f times faster\n", time_rows / time_cols);
-
-
 
     CUDACHECK(cudaEventDestroy(start_init));
     CUDACHECK(cudaEventDestroy(end_init));

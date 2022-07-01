@@ -1,7 +1,9 @@
 #include <cstdio>
 #include <algorithm>
+#include "timer.h"
 
 #define CUDACHECK(err) { cuda_check((err), __FILE__, __LINE__); }
+
 inline void cuda_check(cudaError_t error_code, const char *file, int line)
 {
     if (error_code != cudaSuccess)
@@ -11,7 +13,7 @@ inline void cuda_check(cudaError_t error_code, const char *file, int line)
     }
 }
 
-void print_vector(float * data, int count, const char * label)
+void print_vector(float * data, int count, const char *label)
 {
     int print_max = 20;
     int print_count = std::min(count, print_max);
@@ -52,25 +54,31 @@ __global__ void vector_scale(float scalar, float * data, int count)
 
 int main()
 {
-    int count = 12345;
+    int count = 1234567;
+    float *h_data = new float[count];
 
-    float * h_data = new float[count];
-    for(int i = 0; i < count; i++)
+    for(int i = 0; i < count; i++) {
         h_data[i] = i;
+    }
+
     print_vector(h_data, count, "Input");
 
-    float * d_data;
-    cudaMalloc(&d_data, count * sizeof(float));
-    cudaMemcpy(d_data, h_data, count * sizeof(float), cudaMemcpyHostToDevice);
+    float *d_data;
+    CUDACHECK(cudaMalloc(&d_data, count * sizeof(float)));
+    CUDACHECK(cudaMemcpy(d_data, h_data, count * sizeof(float), cudaMemcpyHostToDevice));
 
     int threads_per_block = 256;
     int blocks_per_grid = (count + threads_per_block - 1) / threads_per_block;
     // int blocks_per_grid = (count - 1) / threads_per_block + 1;           // also possible
     // int blocks_per_grid = std::ceil((double)count / threads_per_block);  // also possible, but not nice
+    TIMER_BEGIN("checking single device time");
+    cudaDeviceSynchronize();
     vector_scale<<< blocks_per_grid, threads_per_block >>>(2, d_data, count);
     
     CUDACHECK(cudaDeviceSynchronize());   // not needed here, cudaMemcpy already includes implicit synchronization
-    cudaMemcpy(h_data, d_data, count * sizeof(float), cudaMemcpyDeviceToHost);
+    TIMER_END("checking single device time");
+
+    CUDACHECK(cudaMemcpy(h_data, d_data, count * sizeof(float), cudaMemcpyDeviceToHost));
 
     print_vector(h_data, count, "Output");
 

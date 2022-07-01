@@ -17,34 +17,36 @@ int main()
     int scalar = 3;
 
     size_t size = sizeof(int)*n;
-    int* vector = (int*) malloc(size);
+    int* h_vector = (int*) malloc(size);
     
     // Print
     for (int i = 0; i < n; ++i) {
-        vector[i] = i;
-        printf("%d, ", vector[i]);
+        h_vector[i] = i;
+        printf("%d, ", h_vector[i]);
     }
     printf("\n");
     
     // GPU
     int* g_vector;
+    //todo: how much can be allocated?
     cudaMalloc(&g_vector, size);
-    cudaMemcpy(g_vector, vector, size, cudaMemcpyHostToDevice);
-    // Perform the computation.
+    cudaMemcpy(g_vector, h_vector, size, cudaMemcpyHostToDevice);
+    // Perform the computation
+    /// <<<numBlocks, gridsPerBlock>>>
     vecScalar<<<(n-1)/32+1,32>>>(g_vector, scalar, n);
 
-    cudaMemcpy(vector, g_vector, size, cudaMemcpyDeviceToHost);
+    cudaMemcpy(h_vector, g_vector, size, cudaMemcpyDeviceToHost);
 
     cudaFree(g_vector);
     cudaDeviceSynchronize();
     
     // Print
     for (int i = 0; i < n; ++i) {
-        printf("%d, ", vector[i]);
+        printf("%d, ", h_vector[i]);
     }
     printf("\n");
     
-    delete[] vector;
+    delete[] h_vector;
     return 0;
 }
 

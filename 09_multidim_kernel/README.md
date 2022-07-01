@@ -51,13 +51,13 @@ Task 2: Events and timing
 Extend the functionality of the matrix scale program. Using CUDA events, measure and print the time it takes to execute the GPU kernel. Use `cudaEvent_t`, `cudaEventCreate()`, `cudaEventDestroy()`, `cudaEventRecord()`, `cudaEventElapsedTime()`. Increase the size of the matrix to see the change in execution time.
 
 
-
-
-
 Task 3: Matrix sum
 ------------------
 
-Work with the `matrix_sum.cu` file. Allocate memory on the GPU for a square *unsigned integer* matrix using `cudaMallocPitch`. Write a 2D kernel that initializes the matrix with values with `A[row,col] = 2 * row + col`. Write a 1D kernel, in which each thread is assigned a single row and calculates a sum of all elements in that row using a simple loop. Write a similar kernel, but calculate the sums in each column. Store the results in separate device-memory arrays. Launch all three kernels right after each other without any synchronization. Copy the results to the host and check for correctness. Compile and run (and debug :) ).
+Work with the `matrix_sum.cu` file. Allocate memory on the GPU for a square *unsigned integer* matrix using `cudaMallocPitch`. Write a 2D kernel that initializes the matrix with values with `A[row,col] = 2 * row + col`. 
+Write a 1D kernel, in which each thread is assigned a single row and calculates a sum of all elements in that row using a simple loop. 
+Write a similar kernel, but calculate the sums in each column. Store the results in separate device-memory arrays.
+Launch all three kernels right after each other without any synchronization. Copy the results to the host and check for correctness. Compile and run (and debug :) ).
 
 Then, extend the program such that it measures the execution time of all three kernels. Why is the calculation of the sum in each row so much slower?
 
@@ -93,6 +93,7 @@ $gray = 0.21 r + 0.72 g + 0.07 b$
 
 for color to grayscale conversion.
 
-Again, the used datatype is `unsigned char`, row-major order is used, and there is no actual image. The data layout of the color image array is RGBRGBRGB... (a.k.a. array of structures, AoS). Think about what is wrong with this layout.
+Again, the used datatype is `unsigned char`, row-major order is used, and there is no actual image. The data layout of the color image array is RGBRGBRGB...
+(a.k.a. array of structures, AoS). Think about what is wrong with this layout.
 
 ![Color image to grayscale](grayscale.jpg)

@@ -35,7 +35,8 @@ Task 1: Histogram
 
 ### Task 1.1
 
-In the file `histogram.cu`, implement and launch a kernel computing a histogram -- count how many times does each number in $\langle 0,100 )$ appear in the input array. Use atomic operations, mainly the `atomicAdd()` function. Measure the execution time of the kernel (you can use the provided `CUDAMEASURE` macro).
+In the file `histogram.cu`, implement and launch a kernel computing a histogram -- count how many times does each number in $\langle 0,100 )$ appear in the input array. Use atomic operations,
+mainly the `atomicAdd()` function. Measure the execution time of the kernel (you can use the provided `CUDAMEASURE` macro).
 
 ### Task 1.2
 
@@ -46,9 +47,6 @@ Improve the performance of the histogram kernel by using dynamic shared memory. 
 Launch the kernel with 432 blocks, each with 1024 threads (432 = 4\*108, there are 108 streaming multiprocessors on the A100 GPU). There are not enough threads for a one-to-one thread-element mapping, the threads will need to iterate through the array. Measure the execution time. Why do you think the performance improved?
 
 Bonus: find out the number of streaming multiprocessors at runtime using `cudaDeviceGetAttribute()`. Launch the kernel with 4 times as much blocks.
-
-
-
 
 
 Task 2: Asynchronous copies, streams

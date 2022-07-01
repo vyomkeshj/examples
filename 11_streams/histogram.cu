@@ -21,7 +21,6 @@ inline void cuda_check(cudaError_t error_code, const char *file, int line)
     CUDACHECK(cudaEventDestroy(b)); CUDACHECK(cudaEventDestroy(e)); } while(false)
 
 
-
 __global__ void init_array(int * array, size_t count, int bin_count)
 {
     size_t i = (size_t)blockIdx.x * blockDim.x + threadIdx.x;
@@ -53,12 +52,6 @@ __global__ void check_result(int * bins, int bin_count, int array_size, int * er
     }
 }
 
-
-
-
-
-
-
 // TODO 1.1: histogram kernel
 __global__
 void histogram(int* array, size_t array_size, int* bin, int bin_count){
@@ -69,7 +62,7 @@ void histogram(int* array, size_t array_size, int* bin, int bin_count){
     
     int value = array[idx];
     atomicAdd(bin + value, 1);
-    //bin[value] += 1;
+    bin[value] += 1;
 }
 
 
@@ -78,14 +71,6 @@ void histogram(int* array, size_t array_size, int* bin, int bin_count){
 
 
 // TODO 1.3: histogram kernel using shared memory, looping through all array elements
-
-
-
-
-
-
-
-
 
 int main()
 {
@@ -104,10 +89,7 @@ int main()
     int tpb, bpg;
 
     tpb = 512; bpg = (count - 1) / tpb + 1;
-    init_array<<< bpg, tpb >>>(d_array, count, bin_count);
-
-
-
+    init_array<<<bpg, tpb>>>(d_array, count, bin_count);
 
 
     CUDACHECK(cudaMemset(d_bins, 0, bin_count * sizeof(int)));
@@ -125,10 +107,7 @@ int main()
         printf("Everything seems OK\n");
     else
         printf("Total errors: %d\n", h_errors);
-    
 
-
-    
     
     //CUDACHECK(cudaMemset(d_bins, 0, bin_count * sizeof(int)));
     
